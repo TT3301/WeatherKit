@@ -89,7 +89,9 @@ export async function Response($request, $response) {
                             // 路径判断
                             if (url.pathname.startsWith("/api/v2/weather/")) {
                                 const parameters = parseWeatherKitURL(url);
-                                body = WeatherKit2.decode(ByteBuffer, parameters.dataSets);
+                                const dataSets = parameters.dataSets.filter(dataSet => Settings.DataSets.includes(dataSet));
+                                const rootNames = dataSets.map(dataSet => Configs.DataSets[dataSet] ?? dataSet);
+                                body = WeatherKit2.decode(ByteBuffer, rootNames);
                                 const providerParameters = { ...parameters, weatherKitLanguage: body.weatherAlerts?.metadata?.language };
                                 const enviroments = {
                                     colorfulClouds: new ColorfulClouds(providerParameters, Settings?.API?.ColorfulClouds?.Token || "Y2FpeXVuX25vdGlmeQ=="),
@@ -99,7 +101,7 @@ export async function Response($request, $response) {
                                 };
 
                                 await Promise.all(
-                                    parameters.dataSets.map(async dataSet => {
+                                    dataSets.map(async dataSet => {
                                         switch (dataSet) {
                                             case "airQuality": {
                                                 body.airQuality = await InjectAirQuality(body.airQuality, Settings, Caches, enviroments);
@@ -216,8 +218,8 @@ async function InjectForecastDaily(forecastDaily, Settings, enviroments) {
             break;
         }
         case "ColorfulClouds": {
-            const dailysteps = forecastDaily.days?.length || 11;
-            const begin = forecastDaily.days?.[0]?.forecastStart || undefined;
+            const dailysteps = forecastDaily?.days?.length || 11;
+            const begin = forecastDaily?.days?.[0]?.forecastStart;
             newForecastDaily = await enviroments.colorfulClouds.Daily(dailysteps, begin);
             break;
         }
@@ -255,8 +257,8 @@ async function InjectForecastHourly(forecastHourly, Settings, enviroments) {
             break;
         }
         case "ColorfulClouds": {
-            const hourlysteps = forecastHourly.hours?.length || 273;
-            const begin = forecastHourly.hours?.[0]?.forecastStart || undefined;
+            const hourlysteps = forecastHourly?.hours?.length || 273;
+            const begin = forecastHourly?.hours?.[0]?.forecastStart;
             newForecastHourly = await enviroments.colorfulClouds.ForecastHourly(hourlysteps, begin);
             break;
         }
@@ -317,10 +319,9 @@ async function InjectForecastNextHour(forecastNextHour, Settings, enviroments) {
  */
 async function InjectWeatherAlerts(weatherAlerts, Settings, enviroments) {
     Console.info("☑️ InjectWeatherAlerts");
-    const provider = Settings?.WeatherAlerts?.Provider ?? "QWeatherWeb";
     const isNationalWarningCenter = ["国家预警信息发布中心", "國家預警信息發布中心", "National Early Warning Center"].includes(weatherAlerts?.metadata?.providerName);
     let newWeatherAlerts;
-    switch (provider) {
+    switch (Settings?.WeatherAlerts?.Provider) {
         case "WeatherKit": {
             break;
         }
@@ -357,9 +358,9 @@ async function InjectWeatherAlerts(weatherAlerts, Settings, enviroments) {
  * @returns {Promise<any>} 合并后的空气质量对象
  */
 async function InjectAirQuality(airQuality, Settings, Caches, enviroments) {
-    // Step1. 修复污染物单位，并将 Apple AQ scale 归一为不绑定版本的稳定标识
+    // Step1. 修复污染物单位
+    // Step 1. Fix pollutant units.
     airQuality = AirQuality.FixPollutantsUnits(airQuality);
-    airQuality = AirQuality.NormalizeScaleIdentifier(airQuality);
 
     // Step2. 判断原始污染物是否为空，并在需要时注入污染物数据
     const isPollutantEmpty = !Array.isArray(airQuality?.pollutants) || airQuality.pollutants.length === 0;
@@ -367,7 +368,7 @@ async function InjectAirQuality(airQuality, Settings, Caches, enviroments) {
     const needPollutants = isPollutantEmpty && !!(injectedPollutants?.metadata && !injectedPollutants.metadata.temporarilyUnavailable);
 
     // Step3. 根据污染物补齐情况与替换配置，决定是否注入 AQI 指数
-    const needInjectIndex = needPollutants || Settings?.AirQuality?.Current?.Index?.Replace?.includes(AirQuality.GetNameFromScale(airQuality?.scale));
+    const needInjectIndex = needPollutants || Settings?.AirQuality?.Current?.Index?.Replace?.some(scaleName => AirQuality.ScaleMatches(airQuality?.scale, scaleName));
     const injectedIndex = needInjectIndex ? await InjectIndex(injectedPollutants, Settings, enviroments) : injectedPollutants;
 
     // Step4. 计算昨日对比是否需要重算；若未知则注入昨日对比结果
@@ -499,7 +500,7 @@ async function InjectComparison(airQuality, currentIndexProvider, Settings, Cach
                 return true;
             }
             case "WeatherKit": {
-                const result = AirQuality.GetNameFromScale(currentScale) === AirQuality.Config.Scales.HJ6332012.weatherKitScale.name;
+                const result = AirQuality.ScaleMatches(currentScale, AirQuality.Config.Scales.HJ6332012.weatherKitScale.name);
                 Console.info("✅ isHJ6332012", result);
                 return result;
             }

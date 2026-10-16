@@ -11,7 +11,7 @@ export interface Settings {
         /**
          * [数据集]
          *
-         * 选中的数据集会被包含在请求中。
+         * 选择需要解析并处理的数据集；未选择的数据槽始终保持原样透传，不作修改。
          *
          * @remarks
          *
@@ -21,15 +21,15 @@ export interface Settings {
          * - `'forecastDaily'` - 每日预报
          * - `'forecastHourly'` - 每小时预报
          * - `'forecastNextHour'` - 未来一小时降水强度
-         * - `'locationInfo'` - 位置信息
          * - `'news'` - 新闻
-         * - `'historicalComparisons'` - 历史对比
          * - `'weatherAlerts'` - 天气预警
-         * - `'weatherChanges'` - 天气变化
+         * - `'weatherChange'` - 天气变化
+         * - `'trendComparison'` - 历史对比
+         * - `'locationInfo'` - 位置信息
          *
-         * @defaultValue ["airQuality","currentWeather","forecastDaily","forecastHourly","forecastNextHour","locationInfo","news","historicalComparisons","weatherAlerts","weatherChanges"]
+         * @defaultValue ["airQuality","currentWeather","forecastDaily","forecastHourly","forecastNextHour","news","weatherAlerts","weatherChange","trendComparison","locationInfo"]
          */
-        Value?: ("airQuality" | "currentWeather" | "forecastDaily" | "forecastHourly" | "forecastNextHour" | "locationInfo" | "news" | "historicalComparisons" | "weatherAlerts" | "weatherChanges")[];
+        Value?: ("airQuality" | "currentWeather" | "forecastDaily" | "forecastHourly" | "forecastNextHour" | "news" | "weatherAlerts" | "weatherChange" | "trendComparison" | "locationInfo")[];
     };
     Weather?: {
         /**
@@ -268,10 +268,16 @@ export interface Settings {
              * - `'WAQI_InstantCast_US'` - 美标InstantCast（EPA-454/B-24-002）
              * - `'WAQI_InstantCast_CN'` - 国标InstantCast（HJ 633—2012）
              * - `'WAQI_InstantCast_CN_25_DRAFT'` - 国标InstantCast（HJ 633 2025年草案）
+             * - `'CA_AQHI'` - 加拿大AQHI（10.17269/s41997-019-00237-w）
+             * - `'HK_AQHI'` - 香港AQHI
+             * - `'AQHI_Multi_CN'` - AQHI-Multi（中国）
+             * - `'AQHI_Multi_CN_HK'` - AQHI-Multi（中国+香港）
+             * - `'CN_DEATH_AQHI'` - 中国（致死风险）AQHI
+             * - `'CN_DEATH_HK_AQHI'` - 中国（致死风险）+香港AQHI
              *
              * @defaultValue "EU_EAQI"
              */
-            Algorithm?: "None" | "UBA" | "EU_EAQI" | "WAQI_InstantCast_US" | "WAQI_InstantCast_CN" | "WAQI_InstantCast_CN_25_DRAFT";
+            Algorithm?: "None" | "UBA" | "EU_EAQI" | "WAQI_InstantCast_US" | "WAQI_InstantCast_CN" | "WAQI_InstantCast_CN_25_DRAFT" | "CA_AQHI" | "HK_AQHI" | "AQHI_Multi_CN" | "AQHI_Multi_CN_HK" | "CN_DEATH_AQHI" | "CN_DEATH_HK_AQHI";
             /**
              * [iRingo内置算法] 允许指数超标
              *

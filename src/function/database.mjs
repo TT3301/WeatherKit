@@ -2,7 +2,7 @@ export default {
     WeatherKit: {
         Settings: {
             // 只有插件会修改的产品允许被配置关闭；其余 Apple 数据集必须始终透传。
-            DataSets: ["airQuality", "currentWeather", "forecastDaily", "forecastHourly", "forecastNextHour"],
+            DataSets: ["airQuality", "currentWeather", "forecastDaily", "forecastHourly", "forecastNextHour", "weatherAlerts"],
             Weather: { Replace: ["CN"], Provider: "ColorfulClouds" },
             WeatherAlerts: { Provider: "QWeatherWeb" },
             NextHour: { Provider: "ColorfulClouds" },
@@ -11,12 +11,24 @@ export default {
                 Comparison: { ReplaceWhenCurrentChange: false, Yesterday: { PollutantsProvider: "QWeather", IndexProvider: "ColorfulCloudsUS" } },
                 Calculate: { Algorithm: "EU_EAQI", AllowOverRange: true },
             },
-            API: { WAQI: { Token: null }, QWeather: { Token: null, Host: "devapi.qweather.com" }, ColorfulClouds: { Token: null } },
+            API: { WAQI: { Token: null }, QWeather: { Token: "bdd98ec1d87747f3a2e8b1741a5af796", Host: "devapi.qweather.com" }, ColorfulClouds: { Token: "Y2FpeXVuX25vdGlmeQ==" } },
         },
         Configs: {
             Availability: {
                 v1: ["currentWeather", "dailyForecast", "hourlyForecast", "minuteForecast", "weatherAlerts"],
                 v2: ["airQuality", "currentWeather", "forecastDaily", "forecastHourly", "forecastPeriodic", "historicalComparisons", "weatherChanges", "forecastNextHour", "weatherAlerts", "weatherAlertNotifications", "news"],
+            },
+            DataSets: {
+                airQuality: "airQuality",
+                currentWeather: "currentWeather",
+                forecastDaily: "forecastDaily",
+                forecastHourly: "forecastHourly",
+                forecastNextHour: "forecastNextHour",
+                news: "news",
+                weatherAlerts: "weatherAlerts",
+                weatherChange: "weatherChanges",
+                trendComparison: "historicalComparisons",
+                locationInfo: "locationInfo",
             },
         },
     },
